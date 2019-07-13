@@ -58,4 +58,32 @@ public class SignRecords {
     public void setStrTime(String strTime) {
         this.strTime = strTime;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Timestamp getComeTime() {
+        return comeTime;
+    }
+
+    public Timestamp getLeaveTime() {
+        return leaveTime;
+    }
+
+    public Long getTotalMill() {
+        return totalMill;
+    }
+
+    public String getStrTime() {
+        return strTime;
+    }
 }

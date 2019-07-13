@@ -12,4 +12,28 @@ public class RecordsDto {
     private String name;
     private StringBuilder totaltime;
     private Integer buqian;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public StringBuilder getTotaltime() {
+        return totaltime;
+    }
+
+    public void setTotaltime(StringBuilder totaltime) {
+        this.totaltime = totaltime;
+    }
+
+    public Integer getBuqian() {
+        return buqian;
+    }
+
+    public void setBuqian(Integer buqian) {
+        this.buqian = buqian;
+    }
 }

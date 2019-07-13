@@ -1,12 +1,19 @@
 package com.twelve.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baidu.aip.face.AipFace;
+import com.baidu.aip.face.MatchRequest;
+import com.baidu.aip.util.Base64Util;
+import com.google.common.collect.Lists;
+import com.twelve.model.login.Member;
 import com.twelve.model.sign.SignRecords;
 import com.twelve.repository.MemberRepo;
 import com.twelve.repository.SignRecordsRepo;
 import com.twelve.utils.DateUtil;
 import com.twelve.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +22,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -66,15 +75,59 @@ public class SignCrol {
 
     @RequestMapping(value = "/start", produces = "application/text")
     @ResponseBody
-    public String sendStart(@RequestBody String name) {
+    public String sendStart(@RequestBody JSONObject data) {
 
-        SignRecords signRecords = new SignRecords(name);
-        if (signRecordsRepo.save(signRecords) != null) {
-            signMemberRepo.setIsStart(name);
-            return name + "签到成功";
-        } else {
-            log.error(name + "签到失败");
-            return name + "签到失败，请重试";
+        String name = data.getString("name");
+        Member member = signMemberRepo.findByName(name);
+
+        final String APP_ID = "16751944";
+        final String API_KEY = "5W53rSvUNgbFjQeIDGULsf2K";
+        final String SECRET_KEY = "HmQToe8eVzNGxuFSOlZeeXArHG4rUjLI";
+
+        AipFace client = new AipFace(APP_ID, API_KEY, SECRET_KEY);
+
+        String imgAddr = member.getPicAddr();
+        byte[] b1 = new byte[0];
+        try {
+            b1 = FileUtils.readFileToByteArray(new File(imgAddr));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String s1 = Base64Util.encode(b1);
+        String s2 = data.getString("data");
+
+
+        MatchRequest req1 = new MatchRequest(s1, "BASE64");
+        MatchRequest req2 = new MatchRequest(s2, "BASE64");
+
+        List<MatchRequest> list = Lists.newArrayList();
+        list.add(req1);
+        list.add(req2);
+
+        JSONObject rs = client.match(list);
+        if(rs.getString("error_msg").equals("SUCCESS") == true) {
+            JSONObject result = rs.getJSONObject("result");
+            Double score = result.getDouble("score");
+            if (score >= 80.0) {
+                SignRecords signRecords = new SignRecords(name);
+                if (signRecordsRepo.save(signRecords) != null) {
+                    signMemberRepo.setIsStart(name);
+                    return name + "签到成功" + "  匹配度为:" + score;
+                } else {
+
+                    return name + "签到失败，请重试";
+                }
+            } else {
+
+                return name + "人脸识别失败，请重试";
+            }
+        }
+        else if(rs.getString("error_msg").equals("pic not has face")){
+            return "没有识别到人脸";
+        }
+        else{
+            return "其他识别问题";
         }
     }
 
@@ -100,7 +153,6 @@ public class SignCrol {
                     Map<String, Object> map = new HashMap();
                     map.put("name", name);
                     map.put("time", DateUtil.formatdate(now - cometime.getTime()));
-                    log.info("name" + name + "and : time " + DateUtil.formatdate(now - cometime.getTime()));
                     warnMap.add(map);
                 }
             }
@@ -155,14 +207,12 @@ public class SignCrol {
                     }
                 }
             } catch (Exception e) {
-                log.error("一键重签失败,请重试");
                 return "一键重签失败,请重试";
             }
             jedis.del("warnMap");
         }
         if (!deletedInfo.toString().equals("")) {
             String string = deletedInfo.deleteCharAt(deletedInfo.length() - 1).append("超过六小时，此次签到无效").toString();
-            log.error(string);
             return string;
         }
         return "一键重签成功";
@@ -182,7 +232,6 @@ public class SignCrol {
         if (totalTime > 6 * 60 * 60 * 1000) {
             signRecordsRepo.delete(id);
             signMemberRepo.setIsEnd(name);
-            log.error(name + "签到超过6小时，签到无效");
 
             return name + "签到超过6小时，签到无效";
         } else {
@@ -191,7 +240,6 @@ public class SignCrol {
                 signMemberRepo.setIsEnd(name);
                 return name + "签退成功";
             } else {
-                log.error(name + "签退失败，请重试");
                 return name + "签退失败，请重试";
             }
         }

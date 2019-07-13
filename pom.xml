@@ -22,11 +22,18 @@
 		<java.version>1.8</java.version>
 		<warPackageName>FaceSign</warPackageName>
 		<tomcat.deploy.server>localTestServer</tomcat.deploy.server>
-		<tomcat.deploy.serverUrl>http://211.159.187.251:8080/manager/text</tomcat.deploy.serverUrl>
+		<tomcat.deploy.serverUrl>http://localhost:8080/manager/text</tomcat.deploy.serverUrl>
 	</properties>
 
 
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<version>2.0.8.RELEASE</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -49,6 +56,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.16</version>
 		</dependency>
 
 
@@ -98,6 +106,12 @@
 			<version>2.9.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-logging</artifactId>
+			<version>2.1.6.RELEASE</version>
+		</dependency>
+
 		<!--redis pool需要-->
 		<!--<dependency>-->
 		<!--<groupId>commons-pool</groupId>-->
@@ -121,6 +135,34 @@
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
 
+
+		<dependency>
+			<groupId>com.baidu.aip</groupId>
+			<artifactId>java-sdk</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-freemarker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.baidu.aip</groupId>
+			<artifactId>java-sdk</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<profiles>
@@ -128,7 +170,7 @@
 			<id>deploy2production</id>
 			<properties>
 				<tomcat.deploy.server>productionServer</tomcat.deploy.server>
-				<tomcat.deploy.serverUrl>http://211.159.187.251:8080/manager/text</tomcat.deploy.serverUrl>
+				<tomcat.deploy.serverUrl>http://localhost:8080/manager/text</tomcat.deploy.serverUrl>
 			</properties>
 		</profile>
 	</profiles>
